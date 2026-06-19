@@ -98,8 +98,9 @@ do
   vim.g.mapleader = ' '
   vim.g.maplocalleader = ' '
 
+
   -- Set to true if you have a Nerd Font installed and selected in the terminal
-  vim.g.have_nerd_font = false
+  vim.g.have_nerd_font = true
 
   -- [[ Setting options ]]
   --  See `:help vim.o`
@@ -110,7 +111,7 @@ do
   vim.o.number = true
   -- You can also add relative line numbers, to help with jumping.
   --  Experiment for yourself to see if you like it!
-  -- vim.o.relativenumber = true
+  vim.o.relativenumber = true
 
   -- Enable mouse mode, can be useful for resizing splits for example!
   vim.o.mouse = 'a'
@@ -171,6 +172,12 @@ do
   -- instead raise a dialog asking if you wish to save the current file(s)
   -- See `:help 'confirm'`
   vim.o.confirm = true
+
+
+  if vim.fn.has("win32") then
+    vim.opt.shell = "cmd.exe"
+  -- vim.o.shell = "bash.exe"
+  end 
 end
 
 -- ============================================================
@@ -300,8 +307,13 @@ do
       local kind = ev.data.kind
       if kind ~= 'install' and kind ~= 'update' then return end
 
-      if name == 'telescope-fzf-native.nvim' and vim.fn.executable 'make' == 1 then
-        run_build(name, { 'make' }, ev.data.path)
+      if name == 'telescope-fzf-native.nvim' then
+        if vim.fn.executable 'make' == 1 then
+          run_build(name, { 'make' }, ev.data.path)
+        elseif vim.fn.executable 'cmake' == 1 then
+          run_build(name, { 'cmake', '-S.', '-Bbuild', '-DCMAKE_BUILD_TYPE=Release' }, ev.data.path)
+          run_build(name, { 'cmake', '--build', 'build', '--config', 'Release', '--target', 'install' }, ev.data.path)
+        end
         return
       end
 
@@ -484,7 +496,10 @@ do
     gh 'nvim-telescope/telescope.nvim',
     gh 'nvim-telescope/telescope-ui-select.nvim',
   }
-  if vim.fn.executable 'make' == 1 then table.insert(telescope_plugins, gh 'nvim-telescope/telescope-fzf-native.nvim') end
+
+  if vim.fn.executable 'make' == 1 or vim.fn.executable 'cmake' == 1 then
+    table.insert(telescope_plugins, gh 'nvim-telescope/telescope-fzf-native.nvim')
+  end
 
   -- NOTE: You can install multiple plugins at once
   vim.pack.add(telescope_plugins)
@@ -967,11 +982,11 @@ do
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug'
-  -- require 'kickstart.plugins.indent_line'
-  -- require 'kickstart.plugins.lint'
-  -- require 'kickstart.plugins.autopairs'
-  -- require 'kickstart.plugins.neo-tree'
-  -- require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
+  require 'kickstart.plugins.indent_line'
+  require 'kickstart.plugins.lint'
+  require 'kickstart.plugins.autopairs'
+  require 'kickstart.plugins.neo-tree'
+  require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
 
   -- NOTE: You can add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --
